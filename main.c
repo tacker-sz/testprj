@@ -40,6 +40,16 @@ void reset_machinetime(void)
 	
 }
 
+long get_levelsteptimecount(start, end, seqtime)
+{
+	if (end == start) {
+		return 0;
+	}
+	else {
+		return seqtime / (end - start);
+	}
+}
+
 
 time = get_machinetime();
 
@@ -99,7 +109,7 @@ else{							// Door Close
 				break;
 			case IDLE:			// power on / pwr 0%
 				seq++;
-				powerstep = (LOW_POWER_LEVEL - IDLE_POWER_LEVEL) / steptime[seq];
+				powerstep = get_levelsteptimecount(IDLE_POWER_LEVEL, LOW_POWER_LEVEL, steptime[seq]);
 				break;
 			case TRAN_IL:		// pwr 0% Å® pwr low%
 				seq++;
@@ -108,7 +118,7 @@ else{							// Door Close
 				break;
 			case LOW_DRIVE:		// pwr low%
 				seq++;
-				powerstep = (HIGH_POWER_LEVEL - LOW_POWER_LEVEL) / steptime[seq];
+				powerstep = get_levelsteptimecount(LOW_POWER_LEVEL, HIGH_POWER_LEVEL, steptime[seq]);
 				break;
 			case TRAN_LH:		// pwr low% Å® pwr high%
 				seq++;
@@ -117,7 +127,7 @@ else{							// Door Close
 				break;
 			case HIGH_DRIVE:	// pwr high%
 				seq++;
-				powerstep = (LOW_POWER_LEVEL - HIGH_POWER_LEVEL) / steptime[seq];
+				powerstep = get_levelsteptimecount(HIGH_POWER_LEVEL, LOW_POWER_LEVEL, steptime[seq]);
 				break;
 			case TRAN_HL:		// pwr high% Å® pwr low%
 				seq = LOW_DRIVE;
