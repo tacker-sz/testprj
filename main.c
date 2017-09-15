@@ -1,6 +1,34 @@
 
 #include seqtime.h
 
+#define FAN_POWPIN	13
+#define FAN_PLSPIN	12
+#define FAN_CTLPIN	3
+
+void init_fan(void)
+{
+	// port out
+	// PWM mode
+	// counter interrupt
+}
+
+#define FAN_STOP		-1
+#define FAN_FULLSPEED	79
+voit set_fan(int val)	// -1:off, 0-79:on(variable), 80-127:on(full)
+{
+	// OFF
+	if (val<0) {
+		degitalout(powpin, 0);
+	}
+	else {
+	// ON
+		OCRB = val;
+		degitalout(powpin, 1);
+	}
+}
+
+
+
 enum
 {
 	STOP,				// ptr off / power off / pwr 0%
@@ -28,6 +56,17 @@ long steptime[]{
 	2	// HIGH_DRIVE,			// pwr high%
 	1	// TRAN_HL,			// pwr high% ¨ pwr low%
 }
+
+
+// 16e06 /(4*160)= 25e3
+// 16e06 /(8*(1+79))= 25e3
+// 16e06 /(2*8*40)= 25e3
+fOCnxPWM = fclk_I/O / (N~(1+TOP))
+fOCnxPCPWM = fclk_I/O / (2~N~TOP)
+/*
+TCCR2A:	COM2A1	COM2A0	COM2B1	COM2B0	   -   	  -  	WGM2_1	WGM2_0
+TCCR2B:	FOC2A	FOC2B	  -  	  -  	WGM2_2	CS_2	CS_1	CS_0
+*/
 
 
 long get_machinetime(void)			// ƒJƒEƒ“ƒ^’lË
