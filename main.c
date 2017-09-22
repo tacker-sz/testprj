@@ -180,3 +180,94 @@ else{							// Door Close
 }
 
 
+
+volatile unsigned gFanCount;
+100 - 10 clt/sec
+
+void interruptfan(void)
+{
+	cil();  //割り込み禁止
+	gFanCount++;
+	sei();    //割り込み許可
+}
+
+void reset_fanclk(void)
+{
+	cil();  //割り込み禁止
+	gFanCount=0;
+	sei();    //割り込み許可
+}
+
+
+
+
+// 1～10秒掛かる。100回転分の所要時間から算出。
+inline unsinged short chk_fanrotation(unsigned long machinecount)
+{
+	static prev_machnecount;
+	static unsinged short rotate=0;
+	
+	if(gFanCount>200){
+		count = gFanCount;
+		reset_fanclk();
+		if(machinecount > prev_machnecount){
+			rotate = (3000 * (usigned long)count) / (machinecount - prev_machnecount);
+		}
+		prev_machnecount = machinecount;
+	}
+	else{
+		if(machinecount > prev_machnecount){
+			if((machinecount - prev_machnecount) > 10000){	//10秒以上
+				if(gFanCount < 20){							//10回転しない
+					prev_machnecount = machinecount;
+					reset_fanclk();
+					rotate = 0;
+				}
+				else{
+					count = gFanCount;
+					reset_fanclk();
+					rotate = (3000 * (usigned long)count) / (machinecount - prev_machnecount);
+					prev_machnecount = machinecount;
+				}
+			}
+		}
+	}
+	return (unsinged short)rotate;
+}
+
+10bps
+
+1110_10101010_1100	start
+1110_01010101_1100	end
+1110_01100110_1100	get
+
+1110_0000_1010 - 01_1111_10
+1110_0000_1010 - 01_1111_10
+1110_0000_1010 - 01_1111_10
+1110_0000_1010 - 01_1111_10
+
+
+
+hiで開始
+25msで128bitサンプル4本に記録
+スタート位置は初回ダウンビットの１後のサイクル
+ 1111 1111 1111 0000
+                 ^  
+
+スタート条件：
+・1が11以上続く事。
+・0が16*4以上続く事。
+
+データ条件：
+・同じ値は最長9（同バッファ内2）
+・↑エッジ(01)を１、↓エッジ(10)を０とする。
+
+ストア条件：
+・前サイクルと同じ値である事。
+・2つ後、３つ後は飛ばす。
+
+エンド条件：
+・0が12サイクル続いた場合
+
+
+
